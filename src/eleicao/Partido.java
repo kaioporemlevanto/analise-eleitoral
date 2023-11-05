@@ -1,4 +1,5 @@
 package eleicao;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,7 @@ public class Partido {
     private String siglaPartido;
     private List<Candidato> candidatos;
     private int qtVotos;
-    
+
     public Partido(int numeroPartido, String siglaPartido) {
         this.numeroPartido = numeroPartido;
         this.siglaPartido = siglaPartido;
@@ -17,8 +18,12 @@ public class Partido {
     public int getTotalVotos() {
         int totalVotos = 0;
         for (Candidato candidato : candidatos) {
-            if(!candidato.getNmTipoDestinacaoVotos().equals("Válido")){
-            totalVotos += candidato.getQtVotos();
+            if (candidato.getNmTipoDestinacaoVotos().equals("Válido")) {
+                totalVotos += candidato.getQtVotos();
+                this.incrementaVotos(totalVotos);
+            }
+            else if(!candidato.getNmTipoDestinacaoVotos().equals("Válido")){
+                totalVotos += candidato.getQtVotos();
             }
         }
         totalVotos += this.getQtVotos();
@@ -28,14 +33,12 @@ public class Partido {
     public int getTotalVotosNominais() {
         int totalVotosNominais = 0;
         for (Candidato candidato : candidatos) {
-            if(!candidato.getNmTipoDestinacaoVotos().equals("Válido")){
-                totalVotosNominais += candidato.getQtVotos();
-            }
+            totalVotosNominais += candidato.getQtVotos();
         }
         return totalVotosNominais;
     }
 
-    public void adicionaCandidato(Candidato candidato){
+    public void adicionaCandidato(Candidato candidato) {
         this.candidatos.add(candidato);
     }
 
@@ -55,8 +58,8 @@ public class Partido {
         return qtVotos;
     }
 
-    public void incrementaVotos (int votos){
-        this.qtVotos+=votos;
+    public void incrementaVotos(int votos) {
+        this.qtVotos += votos;
     }
 
 }

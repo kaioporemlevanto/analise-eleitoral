@@ -25,21 +25,27 @@ public class RelatorioEstatistico extends Relatorio {
         List<Candidato> candidatos = eleicao.getCandidatos();
         List<Candidato> candidatosEleitos = eleicao.getCandidatosEleitos(candidatos);
         Map<String, Integer> candidatosEleitosPorFaixaEtaria = new HashMap<>();
-        Map<String, Integer> faixaEtariaTotais = new HashMap<>();
-        
+        //Map<String, Integer> faixaEtariaTotais = new HashMap<>();
+
         for (Candidato candidato : candidatosEleitos) {
             int idadeNaDataEleicao = calcularIdadeNaDataEleicao(candidato);
             String faixaEtaria = calcularFaixaEtaria(idadeNaDataEleicao);
-            candidatosEleitosPorFaixaEtaria.put(faixaEtaria, candidatosEleitosPorFaixaEtaria.getOrDefault(faixaEtaria, 0) + 1);
+            if (candidatosEleitosPorFaixaEtaria.containsKey(faixaEtaria)) {
+                // Se existe, obtenha o valor atual e incremente
+                candidatosEleitosPorFaixaEtaria.put(faixaEtaria, candidatosEleitosPorFaixaEtaria.get(faixaEtaria) + 1);
+            } else {
+                // Se não existe, inicialize com 1
+                candidatosEleitosPorFaixaEtaria.put(faixaEtaria, 1);
+            }
         }
 
         int totalCandidatosEleitos = candidatosEleitos.size();
 
-        for (Candidato candidato : candidatos) {
-            int idadeNaDataEleicao = calcularIdadeNaDataEleicao(candidato);
-            String faixaEtaria = calcularFaixaEtaria(idadeNaDataEleicao);
-            faixaEtariaTotais.put(faixaEtaria, faixaEtariaTotais.getOrDefault(faixaEtaria, 0) + 1);
-        }
+        // for (Candidato candidato : candidatos) {
+        //     int idadeNaDataEleicao = calcularIdadeNaDataEleicao(candidato);
+        //     String faixaEtaria = calcularFaixaEtaria(idadeNaDataEleicao);
+        //     faixaEtariaTotais.put(faixaEtaria, faixaEtariaTotais.get(faixaEtaria) + 1);
+        // }
 
         List<String> faixasEtariasOrdenadas = Arrays.asList(
         "Idade < 30", "30 <= Idade < 40", "40 <= Idade < 50", "50 <= Idade < 60", "60 <= Idade");
@@ -48,7 +54,7 @@ public class RelatorioEstatistico extends Relatorio {
         System.out.println("\n");
         System.out.println("Eleitos, por faixa etária (na data da eleição):");
         for (String faixaEtaria : faixasEtariasOrdenadas) {
-            int qtCandidatosEleitos = candidatosEleitosPorFaixaEtaria.getOrDefault(faixaEtaria, 0);
+            int qtCandidatosEleitos = candidatosEleitosPorFaixaEtaria.getOrDefault(faixaEtaria,0);
             double porcentagem = (qtCandidatosEleitos / (double) totalCandidatosEleitos) * 100;
             if(faixaEtaria!= "60 <= Idade" && faixaEtaria != "Idade < 30")
                 System.out.println(faixaEtaria + ": " + qtCandidatosEleitos + " (" + String.format("%.2f%%", porcentagem) + ")");
@@ -91,7 +97,7 @@ public class RelatorioEstatistico extends Relatorio {
 
     private String calcularFaixaEtaria(int idadeNaDataEleicao) {
         if (idadeNaDataEleicao < 30) {
-            return "    Idade < 30";
+            return "Idade < 30";
         } else if (idadeNaDataEleicao < 40) {
             return "30 <= Idade < 40";
         } else if (idadeNaDataEleicao < 50) {
@@ -99,7 +105,7 @@ public class RelatorioEstatistico extends Relatorio {
         } else if (idadeNaDataEleicao < 60) {
             return "50 <= Idade < 60";
         } else {
-            return "60 <= Idade    ";
+            return "60 <= Idade";
         }
     }
 

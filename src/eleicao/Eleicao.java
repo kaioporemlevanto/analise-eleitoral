@@ -15,11 +15,20 @@ import java.util.Map;
 
 public class Eleicao {
     private boolean isEstadual;
-    private Map<Integer, Candidato> candidatoMap;//<NmCandidato, candidato> surge logo após a leitura de votações, e seta o qtVotos de cada candidato
-    private List<Candidato> candidatos;//Surge após a leitura do csv de candidatos
-    private List<Votacao> votacoes; //NmVotavel e QtVotos, ela já relacionou cada voto ao seu candidato que está em candidatoMap
-    private Map<Integer, Integer> votosPorNumeroVotavel = new HashMap<>(); //<Nvotavel, Qt votos> surge após csv de votação
+    private Map<Integer, Candidato> candidatoMap;// <NmCandidato, candidato> surge logo após a leitura de votações, e
+                                                 // seta o qtVotos de cada candidato
+    private List<Candidato> candidatos;// Surge após a leitura do csv de candidatos
+    private List<Votacao> votacoes; // NmVotavel e QtVotos, ela já relacionou cada voto ao seu candidato que está em
+                                    // candidatoMap
+    private Map<Integer, Integer> votosPorNumeroVotavel = new HashMap<>(); // <Nvotavel, Qt votos> surge após csv de
+                                                                           // votação
     private Date dataEleicao;
+
+    private Map<Integer, Partido> partidosMap;
+
+    public Map<Integer, Partido> getPartidosMap() {
+        return new HashMap<Integer, Partido>(partidosMap);
+    }
 
     public boolean isEstadual() {
         return isEstadual;
@@ -42,6 +51,8 @@ public class Eleicao {
         candidatoMap = new HashMap<>();
         candidatos = lerCandidatos(arquivoCandidatos);
         votacoes = lerVotacoes(arquivoVotacao);
+        relacionarVotosCandidatos(candidatos, votacoes);
+        partidosMap = agruparCandidatosPorPartido(candidatos, votacoes);
         try {
             this.dataEleicao = new SimpleDateFormat("dd/MM/yyyy").parse(dataEleicao);
         } catch (ParseException e) {
@@ -65,11 +76,13 @@ public class Eleicao {
 
                 String[] candidatosData = candidatosLine.split(";");
                 int cargo = Integer.parseInt(candidatosData[13].replace("\"", ""));
+                int cdSitCandTot = Integer.parseInt(candidatosData[68].replace("\"", ""));
 
-                if ((isEstadual && cargo == 7) || (!isEstadual && cargo == 6)) {
+                if (((isEstadual && cargo == 7) || (!isEstadual && cargo == 6))
+                        && (cdSitCandTot == 2 || cdSitCandTot == 16)) {
                     Candidato candidato = new Candidato(
                             cargo,
-                            Integer.parseInt(candidatosData[68].replace("\"", "")), // CD_SITUACAO_CANDIDATO_TOT
+                            cdSitCandTot, // CD_SITUACAO_CANDIDATO_TOT
                             Integer.parseInt(candidatosData[16].replace("\"", "")), // NR_CANDIDATO
                             candidatosData[18], // NM_URNA_CANDIDATO
                             Integer.parseInt(candidatosData[27].replace("\"", "")), // NR_PARTIDO
@@ -109,13 +122,13 @@ public class Eleicao {
 
                 if ((isEstadual && cargo == 7) || (!isEstadual && cargo == 6)) {
                     int numeroVotavel = Integer.parseInt(votacaoData[19].replace("\"", ""));
-                    int quantidadeVotos = Integer.parseInt(votacaoData[21].replace("\"", ""));
-
-                    if (votosPorNumeroVotavel.containsKey(numeroVotavel)) {
-                        quantidadeVotos += votosPorNumeroVotavel.get(numeroVotavel);
+                    if (numeroVotavel != 95 && numeroVotavel != 96 && numeroVotavel != 97 && numeroVotavel != 98) {
+                        int quantidadeVotos = Integer.parseInt(votacaoData[21].replace("\"", ""));
+                        if (votosPorNumeroVotavel.containsKey(numeroVotavel)) {
+                            quantidadeVotos += votosPorNumeroVotavel.get(numeroVotavel);
+                        }
+                        votosPorNumeroVotavel.put(numeroVotavel, quantidadeVotos);
                     }
-
-                    votosPorNumeroVotavel.put(numeroVotavel, quantidadeVotos);
                 }
             }
 
@@ -124,12 +137,35 @@ public class Eleicao {
                 votacoes.add(votacao);
             }
 
-            relacionarVotosCandidatos(candidatos, votacoes);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
         return votacoes;
+    }
+
+    public void relacionarVotosCandidatos(List<Candidato> candidatos, List<Votacao> votacoes/*
+                                                                                             * , Map<Integer, Partido>
+                                                                                             * partidosMap
+                                                                                             */) {
+
+        for (Candidato candidato : candidatos) {
+            candidatoMap.put(candidato.getNrCandidato(), candidato);
+        }
+
+        for (Votacao votacao : votacoes) {
+            int nrVotavel = votacao.getNrVotavel();
+            if (candidatoMap.containsKey(nrVotavel)) {
+                Candidato candidato = candidatoMap.get(nrVotavel);
+                String UrnaValida = candidato.getNmTipoDestinacaoVotos().replace("\"", "");
+                if (UrnaValida.equals("Válido")) {
+                    int qtVotos = votacao.getQtVotos();
+                    candidato.setQtVotos(qtVotos);
+                } else {
+                    Partido partido = partidosMap.get(nrVotavel);
+                    partido.incrementaVotos(candidato.getQtVotos());
+                }
+            }
+        }
     }
 
     public Map<Integer, Partido> agruparCandidatosPorPartido(List<Candidato> candidatos, List<Votacao> votacoes) {
@@ -176,33 +212,10 @@ public class Eleicao {
         return getCandidatosMaisVotados(candidatosEleitos);
     }
 
-    public void relacionarVotosCandidatos(List<Candidato> candidatos, List<Votacao> votacoes) {
-
-        for (Candidato candidato : candidatos) {
-            candidatoMap.put(candidato.getNrCandidato(), candidato);
-        }
-
-        for (Votacao votacao : votacoes) {
-            int nrVotavel = votacao.getNrVotavel();
-
-            if (candidatoMap.containsKey(nrVotavel)) {
-                int qtVotos = votacao.getQtVotos();
-                Candidato candidato = candidatoMap.get(nrVotavel);
-                candidato.setQtVotos(qtVotos);
-            }
-        }
-    }
-
     public List<Candidato> getCandidatosMaisVotados(List<Candidato> candidatos) {
         candidatos.sort(Comparator.comparingInt(Candidato::getQtVotos).reversed());
         return candidatos;
     }
-
-    // public List<Candidato> getCandidatosMaisVotados(List<Candidato> candidatos) {
-    //     List<Candidato> candidatosVotosDecrescentes = this.getCandidatos();
-    //     candidatosVotosDecrescentes.sort(Comparator.comparingInt(Candidato::getQtVotos).reversed());
-    //     return candidatosVotosDecrescentes;
-    // }
 
     public int getQtDeputadosEleitos() {
         return this.getCandidatosEleitos(candidatos).size();
