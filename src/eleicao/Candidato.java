@@ -16,9 +16,7 @@ public class Candidato {
     private int cdGenero;
     private String nmTipoDestinacaoVotos;
     private int qtVotos;
-    private Votacao votacao;
     private int Indice;
-    private int votosLegenda;
 
     public Candidato(int cdCargo, int cdSituacaoCandidato, int nrCandidato, String nmUrnaCandidato,
     int nrPartido, String sgPartido, int nrFederacao, String dtNascimento, int cdSitTotTurno,
@@ -39,10 +37,6 @@ public class Candidato {
         } catch (ParseException e) {
             this.dtNascimento = null;
         }
-    }
-
-    public int getVotosLegenda() {
-         return votosLegenda;
     }
     
     public int getIndice() {
@@ -102,13 +96,5 @@ public class Candidato {
     }
     public int getQtVotos() {
         return qtVotos;
-    }
-
-    public Votacao getVotacao() {
-        return votacao;
-    }
-
-    public void setVotacao(Votacao votacao) {
-        this.votacao = votacao;
     }
 }

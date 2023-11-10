@@ -8,7 +8,4 @@ public abstract class Relatorio {
     public Relatorio(Eleicao eleicao) {
         this.eleicao = eleicao;
     }
-
-    public void imprimirRelatorio() {
-    }
 }

@@ -21,8 +21,7 @@ public class Partido {
             if (candidato.getNmTipoDestinacaoVotos().equals("Válido")) {
                 totalVotos += candidato.getQtVotos();
                 this.incrementaVotos(totalVotos);
-            }
-            else if(!candidato.getNmTipoDestinacaoVotos().equals("Válido")){
+            } else if (!candidato.getNmTipoDestinacaoVotos().equals("Válido")) {
                 totalVotos += candidato.getQtVotos();
             }
         }

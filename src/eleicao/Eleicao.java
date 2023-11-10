@@ -15,15 +15,9 @@ import java.util.Map;
 
 public class Eleicao {
     private boolean isEstadual;
-    private Map<Integer, Candidato> candidatoMap;// <NmCandidato, candidato> surge logo após a leitura de votações, e
-                                                 // seta o qtVotos de cada candidato
-    private List<Candidato> candidatos;// Surge após a leitura do csv de candidatos
-    private List<Votacao> votacoes; // NmVotavel e QtVotos, ela já relacionou cada voto ao seu candidato que está em
-                                    // candidatoMap
-    private Map<Integer, Integer> votosPorNumeroVotavel = new HashMap<>(); // <Nvotavel, Qt votos> surge após csv de
-                                                                           // votação
     private Date dataEleicao;
-
+    private List<Candidato> candidatos;
+    private List<Votacao> votacoes;
     private Map<Integer, Partido> partidosMap;
 
     public Map<Integer, Partido> getPartidosMap() {
@@ -48,7 +42,6 @@ public class Eleicao {
 
     public Eleicao(boolean isEstadual, String arquivoCandidatos, String arquivoVotacao, String dataEleicao) {
         this.isEstadual = isEstadual;
-        candidatoMap = new HashMap<>();
         candidatos = lerCandidatos(arquivoCandidatos);
         votacoes = lerVotacoes(arquivoVotacao);
         relacionarVotosCandidatos(candidatos, votacoes);
@@ -104,6 +97,7 @@ public class Eleicao {
     }
 
     private List<Votacao> lerVotacoes(String arquivoVotacao) {
+        Map<Integer, Integer> votosPorNumeroVotavel = new HashMap<>();
         List<Votacao> votacoes = new ArrayList<>();
 
         try (BufferedReader votacaoReader = new BufferedReader(
@@ -143,10 +137,8 @@ public class Eleicao {
         return votacoes;
     }
 
-    public void relacionarVotosCandidatos(List<Candidato> candidatos, List<Votacao> votacoes/*
-                                                                                             * , Map<Integer, Partido>
-                                                                                             * partidosMap
-                                                                                             */) {
+    public void relacionarVotosCandidatos(List<Candidato> candidatos, List<Votacao> votacoes) {
+        Map<Integer, Candidato> candidatoMap = new HashMap<>();
 
         for (Candidato candidato : candidatos) {
             candidatoMap.put(candidato.getNrCandidato(), candidato);
